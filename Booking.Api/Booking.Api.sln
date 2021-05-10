@@ -9,9 +9,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "services", "services", "{63
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{C700B199-943B-4214-902E-527D6CD39ECE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Booking.API", "src\services\Booking.API\Booking.API.csproj", "{9761F1A7-7C0B-4DBC-B90D-BEC497B4E716}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Booking.API", "src\services\Booking.API\Booking.API.csproj", "{9761F1A7-7C0B-4DBC-B90D-BEC497B4E716}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Booking.API.Tests", "src\tests\Booking.API.Tests\Booking.API.Tests.csproj", "{D5B1A4BB-001B-4A75-95FC-B3E649FA0711}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Booking.API.Tests", "src\tests\Booking.API.Tests\Booking.API.Tests.csproj", "{D5B1A4BB-001B-4A75-95FC-B3E649FA0711}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QueueService", "src\services\QueueService\QueueService.csproj", "{F90E4471-E4CB-4433-B2E3-A211FB35EA32}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,6 +29,10 @@ Global
 		{D5B1A4BB-001B-4A75-95FC-B3E649FA0711}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D5B1A4BB-001B-4A75-95FC-B3E649FA0711}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D5B1A4BB-001B-4A75-95FC-B3E649FA0711}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F90E4471-E4CB-4433-B2E3-A211FB35EA32}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F90E4471-E4CB-4433-B2E3-A211FB35EA32}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F90E4471-E4CB-4433-B2E3-A211FB35EA32}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F90E4471-E4CB-4433-B2E3-A211FB35EA32}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -36,6 +42,7 @@ Global
 		{C700B199-943B-4214-902E-527D6CD39ECE} = {D1FE5511-DA2E-4174-91D5-BB6AAEDC5E61}
 		{9761F1A7-7C0B-4DBC-B90D-BEC497B4E716} = {63ABCE72-31C2-4131-8700-381FA3EF0613}
 		{D5B1A4BB-001B-4A75-95FC-B3E649FA0711} = {C700B199-943B-4214-902E-527D6CD39ECE}
+		{F90E4471-E4CB-4433-B2E3-A211FB35EA32} = {63ABCE72-31C2-4131-8700-381FA3EF0613}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F465644F-3441-4AF9-8318-12DD765E8D54}
