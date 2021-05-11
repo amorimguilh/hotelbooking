@@ -22,6 +22,7 @@ The idea is to hit Redis in the create and update calls in since it's performati
 The decision for: Mongo, Redis, RabbitMQ were made due to scalability and performance, due to the requirements of the application.
 
 **How to run the project**
+
 Just go to the project folder and run 'docker-compose up'
 
 **Possible next steps**
