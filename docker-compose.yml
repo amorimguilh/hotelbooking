@@ -1,0 +1,72 @@
+version: '3.4'
+
+networks: 
+  appNetwork:
+
+services:
+    rabbit:
+        image: rabbitmq:3-management
+        container_name: rabbit
+        hostname: rabbit
+        environment:
+            RABBITMQ_DEFAULT_USER: user
+            RABBITMQ_DEFAULT_PASS: mysecretpassword
+        ports:
+        - "5672:5672"
+        - "30000:15672"   
+        networks: 
+            - appNetwork
+    mongo:
+        image: mongo
+        restart: always
+        environment:
+            MONGO_INITDB_DATABASE: booking
+        volumes:
+        - ./Scripts/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+        - dbdata:/data/db
+        ports:
+        - "27017:27017"
+        networks:
+            - appNetwork
+    redis:
+        image: redis
+        container_name: redis
+        ports:
+        - "6379:6379"
+        networks:
+            - appNetwork
+    bookingapi:
+        image: gamorim/bookingapi
+        container_name: bookingapi
+        restart: on-failure
+        depends_on:
+            - rabbit
+            - redis
+            - mongo
+        build:
+            context: ./Booking.Api/src/services/Booking.API
+            dockerfile: Dockerfile
+        environment:
+            RABBIT_MQ_HOST: rabbit
+        ports:
+        - "8000:80"  
+        networks: 
+            - appNetwork
+    rabbitmqworker:
+        image: gamorim/rabbitmqworker
+        container_name: rabbitmqworker
+        restart: on-failure
+        depends_on:
+            - rabbit
+            - mongo
+        build:
+            context: ./Booking.Api/src/services/QueueService
+            dockerfile: Dockerfile
+        environment:
+            RABBIT_MQ_HOST: rabbit
+        networks: 
+            - appNetwork
+    
+volumes:
+    dbdata:
+        

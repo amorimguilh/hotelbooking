@@ -1,5 +1,6 @@
 ﻿using Booking.API.Business;
 using Booking.API.Entities;
+using Booking.API.Integration;
 using Booking.API.Repositories;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -16,6 +17,7 @@ namespace Booking.API.Tests
     {
         private Mock<IReservationRepository> _repositoryMock;
         private Mock<ICacheRepository> _cacheMock;
+        private Mock<IQueueIntegration> _queueIntegration;
         private Mock<ILogger<ReservationBusiness>> _loggerMock;
         private ReservationBusiness _business;
         private IEnumerable<Reservation> _preConfiguredReservations;
@@ -26,8 +28,9 @@ namespace Booking.API.Tests
             _preConfiguredReservations = UnitTestHelperMethods.GetPreconfiguredReservations();
             _repositoryMock = new Mock<IReservationRepository>();
             _cacheMock = new Mock<ICacheRepository>();
+            _queueIntegration = new Mock<IQueueIntegration>();
             _loggerMock = new Mock<ILogger<ReservationBusiness>>();
-            _business = new ReservationBusiness(_repositoryMock.Object, _cacheMock.Object, _loggerMock.Object);
+            _business = new ReservationBusiness(_repositoryMock.Object, _cacheMock.Object, _queueIntegration.Object, _loggerMock.Object);
         }
 
         #region Get Reservations Tests
@@ -165,6 +168,7 @@ namespace Booking.API.Tests
 
             _cacheMock.Setup(a => a.GetReservedDatesOwners(It.IsAny<RedisKey[]>())).ReturnsAsync(reservationsDicionary);
             _cacheMock.Setup(a => a.SetReservationDates(It.IsAny<RedisKey[]>(),ownerEmail, It.IsAny<TimeSpan>())).ReturnsAsync(true);
+            _queueIntegration.Setup(a => a.PublishMessage(It.IsAny<Reservation>()));
 
             // Act
             var created = await _business.CreateReservation(reservation);
@@ -196,6 +200,7 @@ namespace Booking.API.Tests
 
             _cacheMock.Setup(a => a.GetReservedDatesOwners(It.IsAny<RedisKey[]>())).ReturnsAsync(reservationsDicionary);
             _cacheMock.Setup(a => a.SetReservationDates(It.IsAny<RedisKey[]>(), ownerEmail, It.IsAny<TimeSpan>())).ReturnsAsync(true);
+            _queueIntegration.Setup(a => a.PublishMessage(It.IsAny<Reservation>()));
 
             // Act
             var created = await _business.CreateReservation(reservation);
@@ -243,6 +248,7 @@ namespace Booking.API.Tests
             _cacheMock.Setup(a => a.DeleteKeys(It.IsAny<RedisKey[]>()));
             _repositoryMock.Setup(a => a.GetReservation(reservationId)).ReturnsAsync(previousReservation);
             _repositoryMock.Setup(a => a.UpdateReservation(newReservation)).ReturnsAsync(true);
+            _queueIntegration.Setup(a => a.PublishMessage(It.IsAny<Reservation>()));
 
             // Act
             var created = await _business.UpdateReservation(newReservation);

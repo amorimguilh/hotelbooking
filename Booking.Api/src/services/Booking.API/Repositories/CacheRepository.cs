@@ -64,7 +64,6 @@ namespace Booking.API.Repositories
 
             foreach(var date in dates)
             {
-                tran.AddCondition(Condition.KeyNotExists(date));
                 tran.StringSetAsync(date, email);
                 tran.KeyExpireAsync(date, expireTime);
             }

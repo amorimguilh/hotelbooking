@@ -1,4 +1,5 @@
 ﻿using Booking.API.Entities;
+using Booking.API.Integration;
 using Booking.API.Repositories;
 using Microsoft.Extensions.Logging;
 using StackExchange.Redis;
@@ -13,6 +14,7 @@ namespace Booking.API.Business
     {
         private readonly IReservationRepository _repository;
         private readonly ICacheRepository _cache;
+        private readonly IQueueIntegration _queue;
         private readonly ILogger<ReservationBusiness> _logger;
         private readonly static TimeSpan DEFAULT_PRE_RESERVATION_TIME = new TimeSpan(0, 1, 0);
         private readonly static string DEFAULT_DATE_FORMAT = "yyyyMMdd";
@@ -22,10 +24,12 @@ namespace Booking.API.Business
         public ReservationBusiness(
             IReservationRepository repository,
             ICacheRepository cache,
+            IQueueIntegration queue,
             ILogger<ReservationBusiness> logger)
         {
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
             _cache = cache ?? throw new ArgumentNullException(nameof(cache));
+            _queue = queue ?? throw new ArgumentNullException(nameof(queue));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -98,9 +102,8 @@ namespace Booking.API.Business
                     // update the cache life to the amount of days of the reservation.
                     await _cache.SetReservationDates(dates, reservation.ReservationOwnerEmail, new TimeSpan(numberOfDays, 0, 0, 0));
 
-                    // Persist in database
-                    // Maybe change it for rabbit mq after
-                    await _repository.CreateReservation(reservation);
+                    // send a message to persist in database
+                    _queue.PublishMessage(reservation);
                     success = true;
                 }
                 return success;
@@ -132,12 +135,11 @@ namespace Booking.API.Business
                     var previousReservation = await _repository.GetReservation(reservation.Id);
                     var (previousReservationNumberOfDays, previousReservationDates) = FromStartEndDateToRedisDateArray(previousReservation.StartDate, previousReservation.EndDate);
 
-                    var keysToRemove = dates.Where(x => previousReservationDates.Contains(x)).ToArray();
+                    var keysToRemove = previousReservationDates.Where(x => !dates.Contains(x)).ToArray();
                     await _cache.DeleteKeys(keysToRemove);
 
-                    // Persist in database
-                    // Maybe change it for rabbit mq after
-                    await _repository.UpdateReservation(reservation);
+                    // send a message to persist in database
+                    _queue.PublishMessage(reservation);
 
                     success = true;
                 }
@@ -175,10 +177,9 @@ namespace Booking.API.Business
 
         private bool CanBook(Dictionary<string, int> dateOwnersDictionary, string ownerEmail, int numberOfDays)
         {
-            // In order to proceed with the reservation the requested dates must be only one owner, that owner
-            // must be the same one who make this request and the number of the requested days 
-            // must be smaller or equals than pre-reserved days
-            return dateOwnersDictionary.Keys.Count == 1 && dateOwnersDictionary.ContainsKey(ownerEmail) && numberOfDays <= dateOwnersDictionary[ownerEmail];
+            // In order to proceed with the reservation the requested dates must have only one owner,the same owner who made the pre
+            // reservation request. Also the number of days must match.
+            return dateOwnersDictionary.Keys.Count == 1 && dateOwnersDictionary.ContainsKey(ownerEmail) && dateOwnersDictionary[ownerEmail] == numberOfDays;
         }
 
         /// <summary>

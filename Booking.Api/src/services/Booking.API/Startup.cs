@@ -1,19 +1,17 @@
 using Booking.API.Business;
 using Booking.API.Data;
+using Booking.API.Integration;
 using Booking.API.Repositories;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
+using RabbitMQ.Client;
 using StackExchange.Redis;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using System.Threading;
 
 namespace Booking.API
 {
@@ -36,6 +34,18 @@ namespace Booking.API
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Booking.API", Version = "v1" });
             });
 
+            var envVariable = Environment.GetEnvironmentVariable("RABBIT_MQ_HOST") ?? "localhost";
+
+            Thread.Sleep(8000);
+
+            var factory = new ConnectionFactory()
+            {
+                Uri = new Uri($"amqp://user:mysecretpassword@{envVariable}")
+            };
+
+            var channel = factory.CreateConnection().CreateModel();
+            services.AddSingleton(channel);
+            services.AddSingleton<IQueueIntegration, RabbitMQIntegration>();
             services.AddSingleton<ConnectionMultiplexer>(ConnectionMultiplexer.Connect(Configuration.GetValue<string>("CacheSettings:ConnectionString")));
             services.AddScoped<ICacheRepository, CacheRepository>();
             services.AddScoped<IReservationContext, ReservationContext>();
