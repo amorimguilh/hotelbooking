@@ -23,7 +23,7 @@ The decision for: Mongo, Redis, RabbitMQ were made due to scalability and perfor
 
 **How to run the project**
 
-Just go to the project folder and run 'docker-compose up'
+Just go to the repository folder and run 'docker-compose up'
 
 **Possible next steps**
 - Separate most used endpoints in different services in order to be able to scale just the most demanded operation
